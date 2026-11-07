@@ -1,0 +1,88 @@
+name: 'ConnectMQ MQTT Publish'
+description: 'Publish an MQTT message to ConnectMQ or any MQTT 3.1.1/5.0 broker from a workflow, optionally waiting for a reply/ack.'
+author: 'ConnectMQ'
+
+branding:
+  icon: 'radio'
+  color: 'green'
+
+inputs:
+  host:
+    description: 'Broker host name. Defaults to the ConnectMQ broker.'
+    required: false
+    default: 'broker.connectmq.com'
+  port:
+    description: 'Broker port. Empty = default for the protocol (mqtts 8883, mqtt 1883, wss 8084, ws 8083).'
+    required: false
+    default: ''
+  protocol:
+    description: 'Transport: mqtts (TLS, default), mqtt (plain TCP), wss (WebSocket over TLS), ws (WebSocket).'
+    required: false
+    default: 'mqtts'
+  ws-path:
+    description: 'WebSocket path for ws/wss.'
+    required: false
+    default: '/mqtt'
+  username:
+    description: 'MQTT username. Store it in a secret or variable.'
+    required: false
+    default: ''
+  password:
+    description: 'MQTT password. Always pass it from a secret; it is masked in logs.'
+    required: false
+    default: ''
+  client-id:
+    description: 'MQTT client ID. On ConnectMQ use the client ID issued with your credential. Empty = a random "gha-<run_id>-<random>" ID.'
+    required: false
+    default: ''
+  client-id-suffix:
+    description: 'If true and client-id is set, append "_gha-<run_id>-<random>" so parallel jobs never share an ID (ConnectMQ accepts "<clientId>_<suffix>").'
+    required: false
+    default: 'true'
+  topic:
+    description: 'Topic to publish to (no wildcards).'
+    required: true
+  message:
+    description: 'Message payload (text or JSON). May be empty.'
+    required: false
+    default: ''
+  qos:
+    description: 'Quality of Service: 0, 1 or 2.'
+    required: false
+    default: '1'
+  retain:
+    description: 'Publish as a retained message.'
+    required: false
+    default: 'false'
+  mqtt-version:
+    description: 'MQTT protocol version: 5 or 3.1.1.'
+    required: false
+    default: '5'
+  user-properties:
+    description: 'MQTT 5 user properties as a JSON object, e.g. {"source":"github","sha":"abc123"}.'
+    required: false
+    default: ''
+  wait-topic:
+    description: 'Optional topic (filter) to wait on for a reply/ack after publishing. Also sent as MQTT 5 Response Topic.'
+    required: false
+    default: ''
+  wait-timeout-seconds:
+    description: 'How long to wait for a message on wait-topic before failing.'
+    required: false
+    default: '30'
+  connect-timeout-seconds:
+    description: 'How long to wait for the broker to accept the connection.'
+    required: false
+    default: '30'
+
+outputs:
+  published:
+    description: '"true" if the broker accepted the message, otherwise "false".'
+  reply:
+    description: 'Payload of the first message received on wait-topic (empty if wait-topic is not set).'
+  reply-topic:
+    description: 'Topic of the reply message (useful when wait-topic contains wildcards).'
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'

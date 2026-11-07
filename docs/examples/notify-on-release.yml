@@ -1,0 +1,25 @@
+# Copy to .github/workflows/notify-on-release.yml in YOUR repository (not in the action repository).
+# Publishes a retained "new release" message so devices and dashboards always see the latest version.
+name: Notify devices on release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release event to ConnectMQ
+        uses: connectmq/connectmq-mqtt-publish@v1
+        with:
+          username: ${{ secrets.MQTT_USERNAME }}
+          password: ${{ secrets.MQTT_PASSWORD }}
+          client-id: ${{ secrets.MQTT_CLIENT_ID }}
+          topic: myproduct/releases/latest
+          retain: true
+          message: >-
+            {"version":"${{ github.event.release.tag_name }}",
+             "url":"${{ github.event.release.html_url }}",
+             "repo":"${{ github.repository }}"}
+          user-properties: '{"source":"github","sha":"${{ github.sha }}"}'
